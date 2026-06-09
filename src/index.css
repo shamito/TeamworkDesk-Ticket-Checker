@@ -1,0 +1,20 @@
+:root {
+  color-scheme: light;
+  font: 16px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  background: #f5f6fa;
+  color: #1a1a2e;
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
