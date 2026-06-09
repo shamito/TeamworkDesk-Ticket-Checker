@@ -1,73 +1,79 @@
-# React + TypeScript + Vite
+# TeamworkDesk Ticket Checker
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An internal tool for **Awesomate.ai** to look up Teamwork Desk support tickets by customer name or email. Built for quick access to a customer's full ticket history without having to dig through the Teamwork UI.
 
-Currently, two official plugins are available:
+## What it does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Customer search** — search by first name, last name, full name, or email address. If multiple customers match, pick from a list.
+- **Ticket history** — fetches all tickets linked to that customer across all statuses (Active, Solved, Closed, Waiting on Customer).
+- **Dashboard** — on load, shows the 100 most recently updated tickets across the board, filterable by tab:
+  - **Active** — open tickets with the Active custom status
+  - **Waiting** — tickets waiting on customer response
+  - **Resolved** — tickets marked as Solved (custom status ID 5)
+  - **Closed** — tickets marked as Closed (custom status ID 6)
+  - **All** — everything unfiltered
+- **Custom status labels** — status badges show the real Teamwork custom status name (e.g. "Waiting On Customer") fetched from `/desk/api/v2/ticketstatuses.json`, not just the raw API state.
+- **Clickable ticket IDs** — each ticket ID links directly to the ticket in Teamwork Desk.
+- **Sort & filter** — customer results can be sorted by last updated or created date, ascending or descending.
 
-## React Compiler
+## Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Layer | Technology |
+| --- | --- |
+| Framework | React 18 + TypeScript |
+| Build tool | Vite |
+| API proxy | Vite dev server proxy (injects Bearer auth header server-side) |
+| Styling | Plain CSS (no framework) |
+| API | Teamwork Desk API v2 |
 
-## Expanding the ESLint configuration
+## Getting started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### 1. Install dependencies
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Configure environment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Copy `.env.example` to `.env` and fill in your Teamwork API key:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env
 ```
+
+```env
+TEAMWORK_API_KEY=tkn.v1_your_key_here
+VITE_TEAMWORK_BASE_URL=https://itmooti.teamwork.com
+```
+
+The API key is injected by the Vite proxy at the server level — it never reaches the browser bundle.
+
+### 3. Run the dev server
+
+```bash
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173).
+
+## Project structure
+
+```text
+src/
+├── App.tsx                   # Root layout, search state, dashboard
+├── App.css                   # All styles
+├── types.ts                  # TypeScript interfaces for API responses
+├── components/
+│   ├── SearchForm.tsx         # Search input with clear button
+│   ├── CustomerPicker.tsx     # Multi-match customer selector
+│   └── TicketsTable.tsx       # Tickets table with status badges
+└── services/
+    └── teamwork.ts            # All Teamwork API calls + caching
+```
+
+## Notes
+
+- The Teamwork Desk API `state` field only has `active`, `scheduled`, `merged`, `deleted` — there is no `resolved` or `closed` state. Tickets shown as "Solved" or "Closed" in the UI are `state=active` tickets with a custom `ticketstatus` applied.
+- Customer name lookups are cached in memory per session to avoid redundant API calls.
+- The `.env` file is gitignored — never commit your API key.
