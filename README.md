@@ -44,7 +44,7 @@ cp .env.example .env
 
 ```env
 TEAMWORK_API_KEY=tkn.v1_your_key_here
-VITE_TEAMWORK_BASE_URL=https://itmooti.teamwork.com
+VITE_TEAMWORK_BASE_URL=your_URL
 ```
 
 The API key is injected by the Vite proxy at the server level — it never reaches the browser bundle.
